@@ -1,6 +1,7 @@
 ﻿using HelixToolkit.Wpf;
 using System;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
@@ -31,9 +32,6 @@ namespace WPFSurfacePlot3D
         public SurfacePlotModel()
         {
             Title = "New Surface Plot";
-            XAxisLabel = "x-Axis";
-            YAxisLabel = "y-Axis";
-            ZAxisLabel = "z-Axis";
 
             ColorCoding = ColorCoding.ByLights;
 
@@ -44,6 +42,7 @@ namespace WPFSurfacePlot3D
 
         #region === Public Methods ===
 
+        #region PlotFunction
 
         public void PlotData(double[,] zData2DArray)
         {
@@ -70,8 +69,6 @@ namespace WPFSurfacePlot3D
         public void PlotData(double[,] zData2DArray, double[] xArray, double[] yArray)
         {
             // Note - check that dimensions match!!
-
-
         }
 
         public void PlotData(Point3D[,] point3DArray)
@@ -86,45 +83,37 @@ namespace WPFSurfacePlot3D
 
         public void PlotFunction(Func<double, double, double> function, double minimumXY, double maximumXY)
         {
-            PlotFunction(function, minimumXY, maximumXY, minimumXY, maximumXY, defaultFunctionSampleSize, defaultFunctionSampleSize);
+            PlotFunction(function, minimumXY, maximumXY, minimumXY, maximumXY, defaultFunctionSampleSize,
+                defaultFunctionSampleSize);
         }
 
-        public void PlotFunction(Func<double, double, double> function, double minimumXY, double maximumXY, int sampleSize)
+        public void PlotFunction(Func<double, double, double> function, double minimumXY, double maximumXY,
+            int sampleSize)
         {
             PlotFunction(function, minimumXY, maximumXY, minimumXY, maximumXY, sampleSize, sampleSize);
         }
 
-        public void PlotFunction(Func<double, double, double> function, double xMinimum, double xMaximum, double yMinimum, double yMaximum)
+        public void PlotFunction(Func<double, double, double> function, double xMinimum, double xMaximum,
+            double yMinimum, double yMaximum)
         {
-            PlotFunction(function, xMinimum, xMaximum, yMinimum, yMaximum, defaultFunctionSampleSize, defaultFunctionSampleSize);
+            PlotFunction(function, xMinimum, xMaximum, yMinimum, yMaximum, defaultFunctionSampleSize,
+                defaultFunctionSampleSize);
         }
 
-        public void PlotFunction(Func<double, double, double> function, double xMinimum, double xMaximum, double yMinimum, double yMaximum, int sampleSize)
+        public void PlotFunction(Func<double, double, double> function, double xMinimum, double xMaximum,
+            double yMinimum, double yMaximum, int sampleSize)
         {
             PlotFunction(function, xMinimum, xMaximum, yMinimum, yMaximum, sampleSize, sampleSize);
         }
 
-        public void PlotFunction(Func<double, double, double> function, double xMinimum, double xMaximum, double yMinimum, double yMaximum, int xSampleSize, int ySampleSize)
+        public void PlotFunction(Func<double, double, double> function, double xMinimum, double xMaximum,
+            double yMinimum, double yMaximum, int xSampleSize, int ySampleSize)
         {
-            // todo - implement checks to ensure the input parameters make sense. Maybe a SetXYRange internal method?
-            xMin = xMinimum;
-            xMax = xMaximum;
-            yMin = yMinimum;
-            yMax = yMaximum;
-
             double[] xArray = CreateLinearlySpacedArray(xMinimum, xMaximum, xSampleSize);
             double[] yArray = CreateLinearlySpacedArray(yMinimum, yMaximum, ySampleSize);
 
             DataPoints = CreateDataArrayFromFunction(function, xArray, yArray);
-            switch (ColorCoding)
-            {
-                case ColorCoding.ByGradientY:
-                    ColorValues = FindGradientY(DataPoints);
-                    break;
-                case ColorCoding.ByLights:
-                    ColorValues = null;
-                    break;
-            }
+
             RaisePropertyChanged("DataPoints");
             RaisePropertyChanged("ColorValues");
             RaisePropertyChanged("SurfaceBrush");
@@ -132,9 +121,11 @@ namespace WPFSurfacePlot3D
 
         #endregion
 
+        #endregion
+
         #region === Private Methods ===
 
-        private Point3D[,] CreateDataArrayFromFunction(Func<double, double, double> f, double[] xArray, double[] yArray)
+        private static Point3D[,] CreateDataArrayFromFunction(Func<double, double, double> f, double[] xArray, double[] yArray)
         {
             Point3D[,] newDataArray = new Point3D[xArray.Length, yArray.Length];
             for (int i = 0; i < xArray.Length; i++)
@@ -149,10 +140,10 @@ namespace WPFSurfacePlot3D
             return newDataArray;
         }
 
-        private double[] CreateLinearlySpacedArray(double minValue, double maxValue, int numberOfPoints)
+        private static double[] CreateLinearlySpacedArray(double minValue, double maxValue, int numberOfPoints)
         {
             double[] array = new double[numberOfPoints];
-            double intervalSize = (xMax - xMin) / (numberOfPoints - 1);
+            double intervalSize = (maxValue - minValue) / (numberOfPoints - 1);
             for (int i = 0; i < numberOfPoints; i++)
             {
                 array[i] = minValue + i * intervalSize;
@@ -160,26 +151,13 @@ namespace WPFSurfacePlot3D
             return array;
         }
 
-        /*
-        private void SetTicksAutomatically()
-        {
-            xTickMin = xMin;
-            xTickMax = xMax;
-            xNumberOfTicks = 10;
-            xTickInterval = (xTickMax - xTickMin) / (xNumberOfTicks - 1);
-            for (int i = 0; i < xNumberOfTicks; i++)
-            {
-                //xTickMin
-            }
-        } */
-
         #endregion
 
         #region === Exposed Properties ===
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected void RaisePropertyChanged(string property)
+        protected void RaisePropertyChanged([CallerMemberName] string property = null)
         {
             var handler = PropertyChanged;
             if (handler != null)
@@ -243,39 +221,6 @@ namespace WPFSurfacePlot3D
             }
         }
 
-        private string xAxisLabel;
-        public string XAxisLabel
-        {
-            get { return xAxisLabel; }
-            set
-            {
-                xAxisLabel = value;
-                RaisePropertyChanged("XAxisLabel");
-            }
-        }
-
-        private string yAxisLabel;
-        public string YAxisLabel
-        {
-            get { return yAxisLabel; }
-            set
-            {
-                yAxisLabel = value;
-                RaisePropertyChanged("YAxisLabel");
-            }
-        }
-
-        private string zAxisLabel;
-        public string ZAxisLabel
-        {
-            get { return zAxisLabel; }
-            set
-            {
-                zAxisLabel = value;
-                RaisePropertyChanged("ZAxisLabel");
-            }
-        }
-
         private bool showSurfaceMesh;
         public bool ShowSurfaceMesh
         {
@@ -311,23 +256,6 @@ namespace WPFSurfacePlot3D
 
         #endregion
 
-        /* // Do we actually need to keep any of these persistent variables for any reason...? (binding?)
-
-        private int xNumberOfPoints;
-        private int yNumberOfPoints;
-
-        private int xNumberOfTicks;
-        private int yNumberOfTicks;
-        private int zNumberOfTicks;
-
-        private double xTickInterval, yTickInterval, zTickInterval;
-        private double xTickMin, xTickMax, yTickMin, yTickMax, zTickMin, zTickMax; */
-        private double xMin, xMax, yMin, yMax, zMin, zMax;
-
-        /* OLD STUFF */
-
-        public double[,] ColorValues { get; set; }
-
         public ColorCoding ColorCoding { get; set; }
 
         public Model3DGroup Lights
@@ -355,9 +283,6 @@ namespace WPFSurfacePlot3D
         {
             get
             {
-                // Brush = BrushHelper.CreateGradientBrush(Colors.White, Colors.Blue);
-                // Brush = GradientBrushes.RainbowStripes;
-                // Brush = GradientBrushes.BlueWhiteRed;
                 switch (ColorCoding)
                 {
                     case ColorCoding.ByGradientY:
@@ -367,33 +292,6 @@ namespace WPFSurfacePlot3D
                 }
                 return null;
             }
-        }
-
-        // http://en.wikipedia.org/wiki/Numerical_differentiation
-        public double[,] FindGradientY(Point3D[,] data)
-        {
-            int n = data.GetUpperBound(0) + 1;
-            int m = data.GetUpperBound(0) + 1;
-            var K = new double[n, m];
-            for (int i = 0; i < n; i++)
-                for (int j = 0; j < m; j++)
-                {
-                    // Finite difference approximation
-                    var p10 = data[i + 1 < n ? i + 1 : i, j - 1 > 0 ? j - 1 : j];
-                    var p00 = data[i - 1 > 0 ? i - 1 : i, j - 1 > 0 ? j - 1 : j];
-                    var p11 = data[i + 1 < n ? i + 1 : i, j + 1 < m ? j + 1 : j];
-                    var p01 = data[i - 1 > 0 ? i - 1 : i, j + 1 < m ? j + 1 : j];
-
-                    //double dx = p01.X - p00.X;
-                    //double dz = p01.Z - p00.Z;
-                    //double Fx = dz / dx;
-
-                    double dy = p10.Y - p00.Y;
-                    double dz = p10.Z - p00.Z;
-
-                    K[i, j] = dz / dy;
-                }
-            return K;
         }
     }
 }

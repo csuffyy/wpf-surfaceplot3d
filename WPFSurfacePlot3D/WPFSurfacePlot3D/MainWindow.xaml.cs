@@ -101,10 +101,5 @@ namespace WPFSurfacePlot3D
                     break;
             }
         }
-
-        private void FileExit_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
     }
 }
