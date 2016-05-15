@@ -21,7 +21,7 @@ namespace WPFSurfacePlot3D
         ByGradientY
     }
 
-    class SurfacePlotModel : INotifyPropertyChanged
+    class SurfacePlotViewModel : INotifyPropertyChanged
     {
         private int defaultFunctionSampleSize = 100;
 
@@ -29,7 +29,7 @@ namespace WPFSurfacePlot3D
         // - DataPoints as Point3D, plus xAxisTicks (and y, z) as double[]
         // - plus all the appropriate properties, which can be directly edited/bindable by the user
 
-        public SurfacePlotModel()
+        public SurfacePlotViewModel()
         {
             Title = "New Surface Plot";
 
@@ -110,12 +110,14 @@ namespace WPFSurfacePlot3D
             double yMinimum, double yMaximum, int xSampleSize, int ySampleSize)
         {
             double[] xArray = CreateLinearlySpacedArray(xMinimum, xMaximum, xSampleSize);
+            XAxisTicks = xArray;
+
             double[] yArray = CreateLinearlySpacedArray(yMinimum, yMaximum, ySampleSize);
+            YAxisTicks = yArray;
 
             DataPoints = CreateDataArrayFromFunction(function, xArray, yArray);
 
             RaisePropertyChanged("DataPoints");
-            RaisePropertyChanged("ColorValues");
             RaisePropertyChanged("SurfaceBrush");
         }
 
@@ -184,7 +186,7 @@ namespace WPFSurfacePlot3D
             set
             {
                 xAxisTicks = value;
-                //RaisePropertyChanged("DataPoints");
+                RaisePropertyChanged("DataPoints");
             }
         }
 
@@ -195,7 +197,7 @@ namespace WPFSurfacePlot3D
             set
             {
                 yAxisTicks = value;
-                //RaisePropertyChanged("DataPoints");
+                RaisePropertyChanged("DataPoints");
             }
         }
 
@@ -206,7 +208,7 @@ namespace WPFSurfacePlot3D
             set
             {
                 zAxisTicks = value;
-                //RaisePropertyChanged("DataPoints");
+                RaisePropertyChanged("DataPoints");
             }
         }
 

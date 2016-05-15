@@ -13,6 +13,7 @@ namespace WPFSurfacePlot3D
         public SurfacePlotView()
         {
             InitializeComponent();
+
             DataContext = LayoutRoot.DataContext;
             hViewport.ZoomExtentsGesture = new KeyGesture(Key.Space);
         }
@@ -24,7 +25,7 @@ namespace WPFSurfacePlot3D
         }
 
         public static readonly DependencyProperty DataPointsProperty = DependencyProperty.Register("DataPoints", typeof(Point3D[,]), typeof(SurfacePlotView), new FrameworkPropertyMetadata(SurfacePlotVisual3D.SamplePoints));
-        
+
         public string Title
         {
             get { return (string)GetValue(TitleProperty); }
@@ -32,30 +33,6 @@ namespace WPFSurfacePlot3D
         }
 
         public static readonly DependencyProperty TitleProperty = DependencyProperty.Register("Title", typeof(string), typeof(SurfacePlotView), new FrameworkPropertyMetadata("Surface Plot Title"));
-
-        public string XAxisLabel
-        {
-            get { return (string)GetValue(XAxisLabelProperty); }
-            set { SetValue(XAxisLabelProperty, value); }
-        }
-
-        public static readonly DependencyProperty XAxisLabelProperty = DependencyProperty.Register("XAxisLabel", typeof(string), typeof(SurfacePlotView), new FrameworkPropertyMetadata("X Axis Label"));
-
-        public string YAxisLabel
-        {
-            get { return (string)GetValue(YAxisLabelProperty); }
-            set { SetValue(YAxisLabelProperty, value); }
-        }
-
-        public static readonly DependencyProperty YAxisLabelProperty = DependencyProperty.Register("YAxisLabel", typeof(string), typeof(SurfacePlotView), new FrameworkPropertyMetadata("Y Axis Label"));
-
-        public string ZAxisLabel
-        {
-            get { return (string)GetValue(ZAxisLabelProperty); }
-            set { SetValue(ZAxisLabelProperty, value); }
-        }
-
-        public static readonly DependencyProperty ZAxisLabelProperty = DependencyProperty.Register("ZAxisLabel", typeof(string), typeof(SurfacePlotView), new FrameworkPropertyMetadata("Z Axis Label"));
 
         public bool ShowSurfaceMesh
         {
@@ -80,6 +57,5 @@ namespace WPFSurfacePlot3D
         }
 
         public static readonly DependencyProperty ShowMiniCoordinatesProperty = DependencyProperty.Register("ShowMiniCoordinates", typeof(bool), typeof(SurfacePlotView), new FrameworkPropertyMetadata(true));
-        
     }
 }

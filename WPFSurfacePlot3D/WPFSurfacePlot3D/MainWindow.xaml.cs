@@ -9,7 +9,7 @@ namespace WPFSurfacePlot3D
     /// </summary>
     public partial class MainWindow : Window
     {
-        private SurfacePlotModel viewModel;
+        private readonly SurfacePlotViewModel viewViewModel = new SurfacePlotViewModel();
 
         /// <summary>
         /// Initialize the main window (hence, this function runs on application start).
@@ -20,10 +20,8 @@ namespace WPFSurfacePlot3D
         {
             InitializeComponent();
 
-            // Initialize surface plot objects
-            viewModel = new SurfacePlotModel();
-            propertyGrid.DataContext = viewModel;
-            surfacePlotView.DataContext = viewModel;
+            propertyGrid.DataContext = viewViewModel;
+            surfacePlotView.DataContext = viewViewModel;
 
             // Populate the functionSelectorComboBox
             functionSelectorComboBox.ItemsSource = Enum.GetValues(typeof(FunctionOptions));
@@ -55,32 +53,32 @@ namespace WPFSurfacePlot3D
             {
                 case FunctionOptions.Gaussian:
                     function = (x, y) => 5 * Math.Exp(-1 * Math.Pow(x, 2) / 4 - Math.Pow(y, 2) / 4) / (Math.Sqrt(2 * Math.PI));
-                    viewModel.PlotFunction(function, -5, 5, 200);
+                    viewViewModel.PlotFunction(function, -5, 5, 200);
                     break;
 
                 case FunctionOptions.Sinc:
                     function = (x, y) => 10 * Math.Sin(Math.Sqrt(x * x + y * y)) / Math.Sqrt(x * x + y * y);
-                    viewModel.PlotFunction(function, -10, 10);
+                    viewViewModel.PlotFunction(function, -10, 10);
                     break;
-                    
+
                 case FunctionOptions.Funnel:
                     function = (x, y) => -1 / (x * x + y * y);
-                    viewModel.PlotFunction(function, -1, 1);
+                    viewViewModel.PlotFunction(function, -1, 1);
                     break;
-                    
+
                 case FunctionOptions.Origami:
                     function = (x, y) => Math.Cos(Math.Abs(x) + Math.Abs(y)) * (Math.Abs(x) + Math.Abs(y));
-                    viewModel.PlotFunction(function, -1, 1);
+                    viewViewModel.PlotFunction(function, -1, 1);
                     break;
 
                 case FunctionOptions.Simple:
                     function = (x, y) => x * y;
-                    viewModel.PlotFunction(function, -1, 1);
+                    viewViewModel.PlotFunction(function, -1, 1);
                     break;
 
                 case FunctionOptions.Ripple:
                     function = (x, y) => 0.25 * Math.Sin(Math.PI * Math.PI * x * y);
-                    viewModel.PlotFunction(function, 0, 2, 300);
+                    viewViewModel.PlotFunction(function, 0, 2, 300);
                     break;
 
                 case FunctionOptions.DataPlot:
@@ -92,12 +90,12 @@ namespace WPFSurfacePlot3D
                             arrayOfPoints[i, j] = 10 * Math.Sin(Math.Sqrt(i * i + j * j)) / Math.Sqrt(i * i + j * j + 0.0001);
                         }
                     }
-                    viewModel.PlotData(arrayOfPoints);
+                    viewViewModel.PlotData(arrayOfPoints);
                     break;
 
                 default:
                     function = (x, y) => 0;
-                    viewModel.PlotFunction(function, -1, 1);
+                    viewViewModel.PlotFunction(function, -1, 1);
                     break;
             }
         }

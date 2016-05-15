@@ -11,22 +11,26 @@
 
     <Grid x:Name="LayoutRoot">
         <Grid.RowDefinitions>
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="11*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0"
                    Margin="10"
                    HorizontalAlignment="Center"
-                   Text="{Binding Title,
-                                  UpdateSourceTrigger=PropertyChanged}" />
+                   Text="{Binding Title}" />
 
         <h:HelixViewport3D x:Name="hViewport"
                            Grid.Row="1"
                            PanGesture="LeftClick"
-                           ShowCoordinateSystem="{Binding ShowMiniCoordinates,
-                                                          UpdateSourceTrigger=PropertyChanged}"
-                           ShowViewCube="False"
+                           ShowCoordinateSystem="{Binding ShowMiniCoordinates}"
+                           ShowViewCube="True"
+                           ViewCubeBackText="后"
+                           ViewCubeBottomText="底"
+                           ViewCubeFrontText="前"
+                           ViewCubeLeftText="左"
+                           ViewCubeRightText="右"
+                           ViewCubeTopText="顶"
                            ZoomExtentsWhenLoaded="True">
 
             <h:HelixViewport3D.Camera>
@@ -34,10 +38,10 @@
             </h:HelixViewport3D.Camera>
 
             <!--  Lights  -->
-            <ModelVisual3D Content="{Binding Lights, UpdateSourceTrigger=PropertyChanged}" />
+            <ModelVisual3D Content="{Binding Lights}" />
 
             <!--  The plot visual (surface, axes and labels)  -->
-            <local:SurfacePlotVisual3D DataPoints="{Binding DataPoints}" SurfaceBrush="{Binding SurfaceBrush, UpdateSourceTrigger=PropertyChanged}" />
+            <local:SurfacePlotVisual3D DataPoints="{Binding DataPoints}" SurfaceBrush="{Binding SurfaceBrush}" />
 
         </h:HelixViewport3D>
     </Grid>

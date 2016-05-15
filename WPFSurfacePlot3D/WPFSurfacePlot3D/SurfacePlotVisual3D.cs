@@ -6,14 +6,10 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 
-
 namespace WPFSurfacePlot3D
 {
     public class SurfacePlotVisual3D : ModelVisual3D
     {
-        // The modelContainer holds all the component models as children
-        private readonly ModelVisual3D modelContainer;
-
         /// <summary>
         /// The constructor for a new SurfacePlotVisual3D object.
         /// </summary>
@@ -24,9 +20,6 @@ namespace WPFSurfacePlot3D
             IntervalZ = 0.25;
             FontSize = 0.06;
             LineThickness = 0.01;
-
-            modelContainer = new ModelVisual3D();
-            Children.Add(modelContainer);
         }
 
         /// <summary>
@@ -64,8 +57,6 @@ namespace WPFSurfacePlot3D
         private static void ModelWasChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((SurfacePlotVisual3D)d).UpdateModel();
-            //((SurfacePlotVisual3D)d).RaiseModelUpdatedEvent();
-
         }
 
         /// <summary>
@@ -74,8 +65,6 @@ namespace WPFSurfacePlot3D
         private void UpdateModel()
         {
             this.Children.Clear(); // Necessary to remove BillboardTextVisual3D objects (?)
-            Children.Add(modelContainer);
-
             this.Content = CreateModel();
         }
 
@@ -120,14 +109,12 @@ namespace WPFSurfacePlot3D
                 }
             }
 
-            /* TEMP */
-            int numberOfXAxisTicks = 10;
-            int numberOfYAxisTicks = 10;
+            int numberOfXAxisTicks = 5;
+            int numberOfYAxisTicks = 5;
             int numberOfZAxisTicks = 5;
-            double XAxisInterval = (maxX - minX) / numberOfXAxisTicks;
-            double YAxisInterval = (maxY - minY) / numberOfYAxisTicks;
-            double ZAxisInterval = (maxZ - minZ) / numberOfZAxisTicks;
-            /* /TEMP */
+            double xAxisInterval = (maxX - minX) / numberOfXAxisTicks;
+            double yAxisInterval = (maxY - minY) / numberOfYAxisTicks;
+            double zAxisInterval = Math.Ceiling(maxZ) / numberOfZAxisTicks;
 
             // Set color value to 0 at texture coordinate 0.5, with an even spread in either direction
             if (Math.Abs(minColorValue) < Math.Abs(maxColorValue))
@@ -164,11 +151,11 @@ namespace WPFSurfacePlot3D
             ModelVisual3D axesLabelsModel = new ModelVisual3D();
 
             // Loop through x intervals - for the surface meshlines, the grid, and X axes ticks
-            for (double x = minX; x <= maxX + 0.0001; x += XAxisInterval)
+            for (double x = minX; x <= maxX + 0.0001; x += xAxisInterval)
             {
                 // Axes labels
                 BillboardTextVisual3D label = new BillboardTextVisual3D();
-                label.Text = string.Format("{0:F2}", x);
+                label.Text = string.Format("{0:F1}", x);
                 //label.Position = new Point3D(x, minY - axesOffset, minZ - axesOffset);
                 label.Position = new Point3D(x, maxY - axesOffset, minZ - axesOffset);
                 axesLabelsModel.Children.Add(label);
@@ -183,11 +170,11 @@ namespace WPFSurfacePlot3D
 
             // Loop through y intervals - for the surface meshlines, the grid, and Y axes ticks
             //for (double y = minY; y <= maxY + 0.0001; y += YAxisInterval)
-            for (double y = minY + YAxisInterval; y < maxY; y += YAxisInterval)
+            for (double y = minY + yAxisInterval; y < maxY; y += yAxisInterval)
             {
                 // Axes labels
                 BillboardTextVisual3D label = new BillboardTextVisual3D();
-                label.Text = string.Format("{0:F2}", y);
+                label.Text = string.Format("{0:F1}", y);
                 //label.Position = new Point3D(minX - axesOffset, y, minZ - axesOffset);
                 label.Position = new Point3D(maxY - axesOffset, y, minZ - axesOffset);
                 axesLabelsModel.Children.Add(label);
@@ -209,14 +196,11 @@ namespace WPFSurfacePlot3D
             gridBuilder.AddTube(gridPath, lineThickness, 9, true);
 
             // Loop through z intervals - for the grid, and Z axes ticks
-            for (double z = minZ; z <= maxZ + 0.0001; z += ZAxisInterval)
+            //for (double z = minZ; z <= maxZ + 0.0001; z += ZAxisInterval)
+            for (double z = 0; z <= maxZ + 0.0001; z += zAxisInterval)
             {
                 // Grid lines
                 var path = new List<Point3D>();
-                //path.Add(new Point3D(minX, maxY, z));
-                //path.Add(new Point3D(maxX, maxY, z));
-                //path.Add(new Point3D(maxX, minY, z));
-
                 path.Add(new Point3D(maxX, minY, z));
                 path.Add(new Point3D(minX, minY, z));
                 path.Add(new Point3D(minX, maxY, z));
@@ -224,8 +208,7 @@ namespace WPFSurfacePlot3D
 
                 // Axes labels
                 BillboardTextVisual3D label = new BillboardTextVisual3D();
-                label.Text = string.Format("{0:F2}", z);
-                //label.Position = new Point3D(minX - axesOffset, maxY + axesOffset, z);
+                label.Text = string.Format("{0:F1}", z);
                 label.Position = new Point3D(maxX - axesOffset, minY + axesOffset, z);
                 axesLabelsModel.Children.Add(label);
             }
@@ -235,16 +218,14 @@ namespace WPFSurfacePlot3D
             //xLabel.Text = "X Axis";
             //xLabel.Position = new Point3D((maxX - minX) / 2, minY - 3 * axesOffset, minZ - 5 * axesOffset);
             //axesLabelsModel.Children.Add(xLabel);
-
             //BillboardTextVisual3D yLabel = new BillboardTextVisual3D();
             //yLabel.Text = "Y Axis";
             //yLabel.Position = new Point3D(minX - 3 * axesOffset, (maxY - minY) / 2, minZ - 5 * axesOffset);
             //axesLabelsModel.Children.Add(yLabel);
-
-            BillboardTextVisual3D zLabel = new BillboardTextVisual3D();
-            //zLabel.Text = "Z Axis";
-            zLabel.Position = new Point3D(minX - 5 * axesOffset, maxY + 5 * axesOffset, 0); // Note: trying to find the midpoint of minZ, maxZ doesn't work when minZ = -0.5 and maxZ = 0.5...
-            axesLabelsModel.Children.Add(zLabel);
+            //BillboardTextVisual3D zLabel = new BillboardTextVisual3D();
+            //zLabel.Text = "0";
+            //zLabel.Position = new Point3D(maxX - axesOffset, minY + axesOffset, 0);
+            //axesLabelsModel.Children.Add(zLabel);
 
             // Create models from MeshBuilders
             GeometryModel3D gridModel = new GeometryModel3D(gridBuilder.ToMesh(), Materials.Black);
