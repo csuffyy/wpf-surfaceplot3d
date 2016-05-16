@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFSurfacePlot3D", "WPFSurfacePlot3D\WPFSurfacePlot3D.csproj", "{A2A364D2-016A-4B9A-B0DA-27FAA433B036}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataProcessing", "..\..\ColorArray\DataProcessing\DataProcessing.csproj", "{67D5075E-6521-4CD5-900E-811360D4BD78}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{A2A364D2-016A-4B9A-B0DA-27FAA433B036}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2A364D2-016A-4B9A-B0DA-27FAA433B036}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2A364D2-016A-4B9A-B0DA-27FAA433B036}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67D5075E-6521-4CD5-900E-811360D4BD78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67D5075E-6521-4CD5-900E-811360D4BD78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67D5075E-6521-4CD5-900E-811360D4BD78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67D5075E-6521-4CD5-900E-811360D4BD78}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
