@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 
@@ -10,16 +9,6 @@ namespace WPFSurfacePlot3D
 {
     public class SurfacePlotVisual3D : ModelVisual3D
     {
-        /// <summary>
-        /// The constructor for a new SurfacePlotVisual3D object.
-        /// </summary>
-        public SurfacePlotVisual3D()
-        {
-            IntervalX = 1;
-            IntervalY = 1;
-            IntervalZ = 0.25;
-        }
-
         /// <summary>
         /// Gets or sets the points defining the 3D surface plot, as a 2D-array of Point3D objects.
         /// </summary>
@@ -41,11 +30,6 @@ namespace WPFSurfacePlot3D
         }
 
         public static readonly DependencyProperty SurfaceBrushProperty = DependencyProperty.Register("SurfaceBrush", typeof(Brush), typeof(SurfacePlotVisual3D), new UIPropertyMetadata(null, ModelWasChanged));
-
-        // todo: make Dependency properties
-        public double IntervalX { get; set; }
-        public double IntervalY { get; set; }
-        public double IntervalZ { get; set; }
 
         /// <summary>
         /// This is called whenever a property of the SurfacePlotVisual3D is changed; it updates the 3D model.
@@ -71,12 +55,10 @@ namespace WPFSurfacePlot3D
         private Model3DGroup CreateModel()
         {
             var newModelGroup = new Model3DGroup();
-            double lineThickness = 0.01;
-            double axesOffset = 0.05;
+            double lineThickness = 0.05;
 
-            // Get relevant constaints from the DataPoints object
-            int numberOfRows = DataPoints.GetUpperBound(0) + 1;
-            int numberOfColumns = DataPoints.GetUpperBound(1) + 1;
+            int rows = DataPoints.GetLength(0);
+            int columns = DataPoints.GetLength(1);
 
             // Determine the x, y, and z ranges of the DataPoints collection
             double minX = double.MaxValue;
@@ -86,16 +68,14 @@ namespace WPFSurfacePlot3D
             double minZ = double.MaxValue;
             double maxZ = double.MinValue;
 
-            double minColorValue = double.MaxValue;
-            double maxColorValue = double.MinValue;
-
-            for (int i = 0; i < numberOfRows; i++)
+            for (int i = 0; i < rows; i++)
             {
-                for (int j = 0; j < numberOfColumns; j++)
+                for (int j = 0; j < columns; j++)
                 {
                     double x = DataPoints[i, j].X;
                     double y = DataPoints[i, j].Y;
                     double z = DataPoints[i, j].Z;
+
                     maxX = Math.Max(maxX, x);
                     maxY = Math.Max(maxY, y);
                     maxZ = Math.Max(maxZ, z);
@@ -105,30 +85,25 @@ namespace WPFSurfacePlot3D
                 }
             }
 
+            double zScale = maxX / maxZ * 0.2;
+
             int numberOfXAxisTicks = 5;
             int numberOfYAxisTicks = 5;
             int numberOfZAxisTicks = 5;
+
             double xAxisInterval = (maxX - minX) / numberOfXAxisTicks;
             double yAxisInterval = (maxY - minY) / numberOfYAxisTicks;
             double zAxisInterval = Math.Ceiling(maxZ) / numberOfZAxisTicks;
 
-            // Set color value to 0 at texture coordinate 0.5, with an even spread in either direction
-            if (Math.Abs(minColorValue) < Math.Abs(maxColorValue))
-            {
-                minColorValue = -maxColorValue;
-            }
-            else
-            {
-                maxColorValue = -minColorValue;
-            }
+            double axesOffset = xAxisInterval / 5;
 
             // Set the texture coordinates by either z-value or ColorValue
-            var textureCoordinates = new Point[numberOfRows, numberOfColumns];
-            for (int i = 0; i < numberOfRows; i++)
+            var textureCoordinates = new Point[rows, columns];
+            for (int i = 0; i < rows; i++)
             {
-                for (int j = 0; j < numberOfColumns; j++)
+                for (int j = 0; j < columns; j++)
                 {
-                    var tc = (DataPoints[i, j].Z - minZ) / (maxZ - minZ) * 80;
+                    var tc = (DataPoints[i, j].Z - minZ) / (maxZ - minZ);
                     textureCoordinates[i, j] = new Point(tc, tc);
                 }
             }
@@ -137,7 +112,7 @@ namespace WPFSurfacePlot3D
             MeshBuilder surfaceModelBuilder = new MeshBuilder();
             surfaceModelBuilder.AddRectangularMesh(DataPoints, textureCoordinates);
 
-            GeometryModel3D surfaceModel = new GeometryModel3D(surfaceModelBuilder.ToMesh(), MaterialHelper.CreateMaterial(SurfaceBrush, null, null, 1, 0));
+            GeometryModel3D surfaceModel = new GeometryModel3D(surfaceModelBuilder.ToMesh(), MaterialHelper.CreateMaterial(SurfaceBrush, null, null, 1));
             surfaceModel.BackMaterial = surfaceModel.Material;
 
             // Instantiate MeshBuilder objects for the Grid meshes
@@ -152,16 +127,8 @@ namespace WPFSurfacePlot3D
                 // Axes labels
                 BillboardTextVisual3D label = new BillboardTextVisual3D();
                 label.Text = string.Format("{0:F1}", x);
-                //label.Position = new Point3D(x, minY - axesOffset, minZ - axesOffset);
-                label.Position = new Point3D(x, maxY - axesOffset, minZ - axesOffset);
+                label.Position = new Point3D(x, maxY + axesOffset, 0);
                 axesLabelsModel.Children.Add(label);
-
-                // Grid lines
-                //var gridPath = new List<Point3D>();
-                //gridPath.Add(new Point3D(x, minY, minZ));
-                //gridPath.Add(new Point3D(x, maxY, minZ));
-                //gridPath.Add(new Point3D(x, maxY, maxZ));
-                //gridBuilder.AddTube(gridPath, lineThickness, 9, false);
             }
 
             // Loop through y intervals - for the surface meshlines, the grid, and Y axes ticks
@@ -171,29 +138,25 @@ namespace WPFSurfacePlot3D
                 // Axes labels
                 BillboardTextVisual3D label = new BillboardTextVisual3D();
                 label.Text = string.Format("{0:F1}", y);
-                //label.Position = new Point3D(minX - axesOffset, y, minZ - axesOffset);
-                label.Position = new Point3D(maxY - axesOffset, y, minZ - axesOffset);
+                label.Position = new Point3D(maxX + axesOffset, y, 0);
                 axesLabelsModel.Children.Add(label);
-
-                // Grid lines
-                //var gridPath = new List<Point3D>();
-                //gridPath.Add(new Point3D(minX, y, minZ));
-                //gridPath.Add(new Point3D(maxX, y, minZ));
-                //gridPath.Add(new Point3D(maxX, y, maxZ));
-                //gridBuilder.AddTube(gridPath, lineThickness, 9, false);
             }
 
             //添加底层方框
             var gridPath = new List<Point3D>();
-            gridPath.Add(new Point3D(minX, minY, minZ));
-            gridPath.Add(new Point3D(maxX, minY, minZ));
-            gridPath.Add(new Point3D(maxX, maxY, minZ));
-            gridPath.Add(new Point3D(minX, maxY, minZ));
+            gridPath.Add(new Point3D(minX, minY, 0));
+            gridPath.Add(new Point3D(maxX, minY, 0));
+            gridPath.Add(new Point3D(maxX, maxY, 0));
+            gridPath.Add(new Point3D(minX, maxY, 0));
             gridBuilder.AddTube(gridPath, lineThickness, 9, true);
+
+            //gridBuilder.AddArrow(new Point3D(0, 0, 0), new Point3D(maxX, 0, 0), 9);
+            //gridBuilder.AddArrow(new Point3D(0, 0, 0), new Point3D(0, maxY, 0), 9);
+            //gridBuilder.AddArrow(new Point3D(0, 0, 0), new Point3D(0, 0, maxZ), 9);
 
             // Loop through z intervals - for the grid, and Z axes ticks
             //for (double z = minZ; z <= maxZ + 0.0001; z += ZAxisInterval)
-            for (double z = 0; z <= maxZ + 0.0001; z += zAxisInterval)
+            for (double z = 0; z <= maxZ + zAxisInterval + 0.0001; z += zAxisInterval)
             {
                 // Grid lines
                 var path = new List<Point3D>();
@@ -205,7 +168,7 @@ namespace WPFSurfacePlot3D
                 // Axes labels
                 BillboardTextVisual3D label = new BillboardTextVisual3D();
                 label.Text = string.Format("{0:F1}", z);
-                label.Position = new Point3D(maxX - axesOffset, minY + axesOffset, z);
+                label.Position = new Point3D(maxX + axesOffset, minY + axesOffset, z);
                 axesLabelsModel.Children.Add(label);
             }
 
@@ -230,6 +193,8 @@ namespace WPFSurfacePlot3D
             this.Children.Add(axesLabelsModel);
             newModelGroup.Children.Add(surfaceModel);
             newModelGroup.Children.Add(gridModel);
+
+            this.Transform = new ScaleTransform3D(1, 1, zScale);
 
             return newModelGroup;
         }

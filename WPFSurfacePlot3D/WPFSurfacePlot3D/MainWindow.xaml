@@ -34,7 +34,7 @@
                           Margin="10"
                           HorizontalAlignment="Stretch"
                           FontSize="12"
-                          SelectedIndex="0"
+                          SelectedIndex="6"
                           SelectionChanged="FunctionSelectionWasChanged" />
 
                 <TextBlock Margin="5"

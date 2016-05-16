@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
+using DataProcessing.Parser;
 
 namespace WPFSurfacePlot3D
 {
@@ -9,7 +12,11 @@ namespace WPFSurfacePlot3D
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const string TouchFilePath = @"Datas/Chip{0}-Touch.csv";
+        private const string UnTouchFilePath = @"Datas/Chip{0}-UnTouch.csv";
+
         private readonly SurfacePlotViewModel viewViewModel = new SurfacePlotViewModel();
+        private Random random = new Random();
 
         /// <summary>
         /// Initialize the main window (hence, this function runs on application start).
@@ -80,15 +87,7 @@ namespace WPFSurfacePlot3D
                     break;
 
                 case FunctionOptions.DataPlot:
-                    double[,] arrayOfPoints = new double[10, 15];
-                    for (int i = 0; i < 10; i++)
-                    {
-                        for (int j = 0; j < 15; j++)
-                        {
-                            arrayOfPoints[i, j] = 10 * Math.Sin(Math.Sqrt(i * i + j * j)) / Math.Sqrt(i * i + j * j + 0.0001);
-                        }
-                    }
-                    viewViewModel.PlotData(arrayOfPoints);
+                    PlotCustomData();
                     break;
 
                 default:
@@ -96,6 +95,31 @@ namespace WPFSurfacePlot3D
                     viewViewModel.PlotFunction(function, -1, 1);
                     break;
             }
+        }
+
+        private void PlotCustomData()
+        {
+            var touchPath = string.Format(TouchFilePath, 1);
+            var unTouchPath = string.Format(UnTouchFilePath, 1);
+            var touchTestData = TestDataParser.Parser(touchPath);
+            var unTouchTestData = TestDataParser.Parser(unTouchPath);
+            var touchList = touchTestData.DaList[0];
+            var unTouchList = unTouchTestData.DaList[0];
+            var diffList = touchList.Zip(unTouchList, (x, y) => (double)Math.Abs(x - y)).ToArray();
+            //viewViewModel.PlotData(touchList.Select<int, double>(x => x).ToArray(), 88);
+            //viewViewModel.PlotData(unTouchList.Select<int, double>(x => x).ToArray(), 88);
+            viewViewModel.PlotData(diffList, 88);
+
+            //double[,] arrayOfPoints = new double[88, 108];
+            //for (int i = 0; i < 88; i++)
+            //{
+            //    for (int j = 0; j < 108; j++)
+            //    {
+            //        //arrayOfPoints[i, j] = 10 * Math.Sin(Math.Sqrt(i * i + j * j)) / Math.Sqrt(i * i + j * j + 0.0001);
+            //        arrayOfPoints[i, j] = random.Next(88, 90);
+            //    }
+            //}
+            //viewViewModel.PlotData(arrayOfPoints);
         }
     }
 }

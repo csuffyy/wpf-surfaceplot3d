@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
@@ -24,6 +25,48 @@ namespace WPFSurfacePlot3D
         #region 公共方法
 
         #region 绘图
+
+        /// <summary>
+        /// 绘制图片（默认按照1440 × 900的分辨率排列）
+        /// </summary>
+        /// <param name="datas">一维数据</param>
+        /// <param name="row">行数</param>
+        /// <returns>可写图片</returns>
+        public void PlotData(double[] datas, int row = 0)
+        {
+            if (row == 0)
+            {
+                // R / C = 1440 / 900
+                // C * R = Length
+                var r = Math.Sqrt(datas.Length * 1440d / 900d);
+                row = Convert.ToInt32(r);
+            }
+
+            var s = 1000;
+
+            int col = Convert.ToInt32(datas.Length / (double)row);
+            //var temp = new double[(row - 8) * (col - 8)];
+            var temp = new double[row * col];
+            Array.Copy(datas, temp, datas.Length);
+
+            var point3Ds = new Point3D[row - 10, col - 10];
+            for (int i = 0; i < row - 10; i++)
+            {
+                for (int j = 0; j < col - 10; j++)
+                {
+                    int index = (i + 5) * col + j + 5;
+                    var v = datas[index];
+                    if (v < 1000)
+                    {
+                        v = 2000;
+                    }
+                    var point = new Point3D(i, j, v);
+                    point3Ds[i, j] = point;
+                }
+            }
+
+            DataPoints = point3Ds;
+        }
 
         public void PlotData(double[,] zData2DArray)
         {

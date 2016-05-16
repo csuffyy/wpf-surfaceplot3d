@@ -137,6 +137,12 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ColorArray\DataProcessing\DataProcessing.csproj">
+      <Project>{67d5075e-6521-4cd5-900e-811360d4bd78}</Project>
+      <Name>DataProcessing</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -8,7 +8,6 @@
              d:DesignHeight="300"
              d:DesignWidth="300"
              mc:Ignorable="d">
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -32,17 +31,19 @@
                            ViewCubeRightText="右"
                            ViewCubeTopText="顶"
                            ZoomExtentsWhenLoaded="True">
-
             <h:HelixViewport3D.Camera>
                 <PerspectiveCamera LookDirection="-1,-1,-1" UpDirection="0,0,1" />
             </h:HelixViewport3D.Camera>
 
+            <ModelVisual3D>
+                <h:SunLight />
+            </ModelVisual3D>
+
             <!--  Lights  -->
-            <ModelVisual3D Content="{Binding Lights}" />
+            <!--<ModelVisual3D Content="{Binding Lights}" />-->
 
             <!--  The plot visual (surface, axes and labels)  -->
             <local:SurfacePlotVisual3D DataPoints="{Binding DataPoints}" SurfaceBrush="{Binding SurfaceBrush}" />
-
         </h:HelixViewport3D>
     </Grid>
 </UserControl>
