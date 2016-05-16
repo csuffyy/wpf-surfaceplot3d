@@ -18,12 +18,10 @@ namespace WPFSurfacePlot3D
         /// </summary>
         public MainWindow()
         {
+            DataContext = viewViewModel;
+
             InitializeComponent();
 
-            propertyGrid.DataContext = viewViewModel;
-            surfacePlotView.DataContext = viewViewModel;
-
-            // Populate the functionSelectorComboBox
             functionSelectorComboBox.ItemsSource = Enum.GetValues(typeof(FunctionOptions));
         }
 

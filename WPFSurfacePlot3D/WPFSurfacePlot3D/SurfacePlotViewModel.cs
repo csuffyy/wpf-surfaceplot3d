@@ -1,5 +1,6 @@
 ﻿using HelixToolkit.Wpf;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -8,83 +9,65 @@ using System.Windows.Media.Media3D;
 
 namespace WPFSurfacePlot3D
 {
-    public enum ColorCoding
+    /// <summary>
+    /// 曲面图ViewModel
+    /// </summary>
+    public class SurfacePlotViewModel : INotifyPropertyChanged
     {
-        /// <summary>
-        /// No color coding, use coloured lights
-        /// </summary>
-        ByLights,
-
-        /// <summary>
-        /// Color code by gradient in y-direction using a gradient brush with white ambient light
-        /// </summary>
-        ByGradientY
-    }
-
-    class SurfacePlotViewModel : INotifyPropertyChanged
-    {
-        private int defaultFunctionSampleSize = 100;
-
-        // So the overall goal of this section is to output the appropriate values to SurfacePlotVisual3D - namely,
-        // - DataPoints as Point3D, plus xAxisTicks (and y, z) as double[]
-        // - plus all the appropriate properties, which can be directly edited/bindable by the user
+        private const int DefaultFunctionSampleSize = 100;
 
         public SurfacePlotViewModel()
         {
             Title = "New Surface Plot";
-
-            ColorCoding = ColorCoding.ByLights;
-
-            // Initialize the DataPoints collection
-            Func<double, double, double> sampleFunction = (x, y) => 10 * Math.Sin(Math.Sqrt(x * x + y * y)) / Math.Sqrt(x * x + y * y);
-            PlotFunction(sampleFunction, -10, 10);
         }
 
-        #region === Public Methods ===
+        #region 公共方法
 
-        #region PlotFunction
+        #region 绘图
 
         public void PlotData(double[,] zData2DArray)
         {
-            int n = zData2DArray.GetLength(0);
-            int m = zData2DArray.GetLength(1);
-            Point3D[,] newDataArray = new Point3D[n, m];
-            for (int i = 0; i < n; i++)
+            int x = zData2DArray.GetLength(0);
+            int y = zData2DArray.GetLength(1);
+            var newDataArray = new Point3D[x, y];
+
+            for (int i = 0; i < x; i++)
             {
-                for (int j = 0; j < m; j++)
+                for (int j = 0; j < y; j++)
                 {
-                    Point3D point = new Point3D(i, j, zData2DArray[i, j]);
+                    var point = new Point3D(i, j, zData2DArray[i, j]);
                     newDataArray[i, j] = point;
                 }
             }
-            dataPoints = newDataArray;
-            RaisePropertyChanged("DataPoints");
+
+            DataPoints = newDataArray;
         }
 
         public void PlotData(double[,] zData2DArray, double xMinimum, double xMaximum, double yMinimum, double yMaximum)
         {
-
+            //TODO:
         }
 
         public void PlotData(double[,] zData2DArray, double[] xArray, double[] yArray)
         {
             // Note - check that dimensions match!!
+            //TODO:
         }
 
         public void PlotData(Point3D[,] point3DArray)
         {
-            // Directly plot from a Point3D array
+            DataPoints = point3DArray;
         }
 
         public void PlotFunction(Func<double, double, double> function)
         {
-            PlotFunction(function, -1, 1, -1, 1, defaultFunctionSampleSize, defaultFunctionSampleSize);
+            PlotFunction(function, -1, 1, -1, 1, DefaultFunctionSampleSize, DefaultFunctionSampleSize);
         }
 
         public void PlotFunction(Func<double, double, double> function, double minimumXY, double maximumXY)
         {
-            PlotFunction(function, minimumXY, maximumXY, minimumXY, maximumXY, defaultFunctionSampleSize,
-                defaultFunctionSampleSize);
+            PlotFunction(function, minimumXY, maximumXY, minimumXY, maximumXY, DefaultFunctionSampleSize,
+                DefaultFunctionSampleSize);
         }
 
         public void PlotFunction(Func<double, double, double> function, double minimumXY, double maximumXY,
@@ -96,8 +79,8 @@ namespace WPFSurfacePlot3D
         public void PlotFunction(Func<double, double, double> function, double xMinimum, double xMaximum,
             double yMinimum, double yMaximum)
         {
-            PlotFunction(function, xMinimum, xMaximum, yMinimum, yMaximum, defaultFunctionSampleSize,
-                defaultFunctionSampleSize);
+            PlotFunction(function, xMinimum, xMaximum, yMinimum, yMaximum, DefaultFunctionSampleSize,
+                DefaultFunctionSampleSize);
         }
 
         public void PlotFunction(Func<double, double, double> function, double xMinimum, double xMaximum,
@@ -117,7 +100,6 @@ namespace WPFSurfacePlot3D
 
             DataPoints = CreateDataArrayFromFunction(function, xArray, yArray);
 
-            RaisePropertyChanged("DataPoints");
             RaisePropertyChanged("SurfaceBrush");
         }
 
@@ -125,7 +107,7 @@ namespace WPFSurfacePlot3D
 
         #endregion
 
-        #region === Private Methods ===
+        #region 私有方法
 
         private static Point3D[,] CreateDataArrayFromFunction(Func<double, double, double> f, double[] xArray, double[] yArray)
         {
@@ -153,20 +135,54 @@ namespace WPFSurfacePlot3D
             return array;
         }
 
+        /// <summary>
+        /// 获取色阶表
+        /// { 255, 255, 255 }  ->
+        /// { 255, 255, 0 }    ->
+        /// { 255, 0, 0 }      ->
+        /// { 255, 0, 255 }    ->
+        /// { 0, 0, 255 }      ->
+        /// { 0, 0, 0 }
+        /// </summary>
+        private static List<Color> GetColorList()
+        {
+            const byte g = 255;
+            const byte b = 255;
+            const byte r = 255;
+
+            var colors = new List<Color>();
+
+            for (int i = b; i >= 0; i = i - 5)
+            {
+                colors.Add(Color.FromRgb(255, 255, (byte)i));
+            }
+
+            for (int i = g - 1; i >= 0; i = i - 5)
+            {
+                colors.Add(Color.FromRgb(255, (byte)i, 0));
+            }
+
+            for (int i = 1; i < b; i = i + 5)
+            {
+                colors.Add(Color.FromRgb(255, 0, (byte)i));
+            }
+
+            for (int i = r - 1; i >= 0; i = i - 5)
+            {
+                colors.Add(Color.FromRgb((byte)i, 0, 255));
+            }
+
+            for (int i = b - 1; i >= 0; i = i - 5)
+            {
+                colors.Add(Color.FromRgb(0, 0, (byte)i));
+            }
+
+            return colors;
+        }
+
         #endregion
 
-        #region === Exposed Properties ===
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void RaisePropertyChanged([CallerMemberName] string property = null)
-        {
-            var handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(property));
-            }
-        }
+        #region 属性
 
         private Point3D[,] dataPoints;
         public Point3D[,] DataPoints
@@ -175,7 +191,7 @@ namespace WPFSurfacePlot3D
             set
             {
                 dataPoints = value;
-                //RaisePropertyChanged("DataPoints");
+                RaisePropertyChanged();
             }
         }
 
@@ -219,29 +235,7 @@ namespace WPFSurfacePlot3D
             set
             {
                 title = value;
-                RaisePropertyChanged("Title");
-            }
-        }
-
-        private bool showSurfaceMesh;
-        public bool ShowSurfaceMesh
-        {
-            get { return showSurfaceMesh; }
-            set
-            {
-                showSurfaceMesh = value;
-                RaisePropertyChanged("ShowSurfaceMesh");
-            }
-        }
-
-        private bool showContourLines;
-        public bool ShowContourLines
-        {
-            get { return showContourLines; }
-            set
-            {
-                showContourLines = value;
-                RaisePropertyChanged("ShowContourLines");
+                RaisePropertyChanged();
             }
         }
 
@@ -252,48 +246,40 @@ namespace WPFSurfacePlot3D
             set
             {
                 showMiniCoordinates = value;
-                RaisePropertyChanged("ShowMiniCoordinates");
+                RaisePropertyChanged();
             }
         }
-
-        #endregion
-
-        public ColorCoding ColorCoding { get; set; }
 
         public Model3DGroup Lights
         {
             get
             {
                 var group = new Model3DGroup();
-                switch (ColorCoding)
-                {
-                    case ColorCoding.ByGradientY:
-                        group.Children.Add(new AmbientLight(Colors.White));
-                        break;
-                    case ColorCoding.ByLights:
-                        group.Children.Add(new AmbientLight(Colors.Gray));
-                        group.Children.Add(new PointLight(Colors.Red, new Point3D(0, -1000, 0)));
-                        group.Children.Add(new PointLight(Colors.Blue, new Point3D(0, 0, 1000)));
-                        group.Children.Add(new PointLight(Colors.Green, new Point3D(1000, 1000, 0)));
-                        break;
-                }
+                group.Children.Add(new AmbientLight(Colors.White));
                 return group;
             }
         }
 
         public Brush SurfaceBrush
         {
-            get
+            get { return BrushHelper.CreateGradientBrush(GetColorList()); }
+        }
+
+        #endregion
+
+        #region PropertyChanged
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void RaisePropertyChanged([CallerMemberName] string property = null)
+        {
+            var handler = PropertyChanged;
+            if (handler != null)
             {
-                switch (ColorCoding)
-                {
-                    case ColorCoding.ByGradientY:
-                        return BrushHelper.CreateGradientBrush(Colors.Red, Colors.White, Colors.Blue);
-                    case ColorCoding.ByLights:
-                        return Brushes.White;
-                }
-                return null;
+                handler(this, new PropertyChangedEventArgs(property));
             }
         }
+
+        #endregion
     }
 }

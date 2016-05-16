@@ -18,8 +18,6 @@ namespace WPFSurfacePlot3D
             IntervalX = 1;
             IntervalY = 1;
             IntervalZ = 0.25;
-            FontSize = 0.06;
-            LineThickness = 0.01;
         }
 
         /// <summary>
@@ -31,7 +29,7 @@ namespace WPFSurfacePlot3D
             set { SetValue(DataPointsProperty, value); }
         }
 
-        public static readonly DependencyProperty DataPointsProperty = DependencyProperty.Register("DataPoints", typeof(Point3D[,]), typeof(SurfacePlotVisual3D), new UIPropertyMetadata(SamplePoints, ModelWasChanged));
+        public static readonly DependencyProperty DataPointsProperty = DependencyProperty.Register("DataPoints", typeof(Point3D[,]), typeof(SurfacePlotVisual3D), new UIPropertyMetadata(null, ModelWasChanged));
 
         /// <summary>
         /// Gets or sets the brush used for the surface.
@@ -48,8 +46,6 @@ namespace WPFSurfacePlot3D
         public double IntervalX { get; set; }
         public double IntervalY { get; set; }
         public double IntervalZ { get; set; }
-        public double FontSize { get; set; }
-        public double LineThickness { get; set; }
 
         /// <summary>
         /// This is called whenever a property of the SurfacePlotVisual3D is changed; it updates the 3D model.
@@ -236,29 +232,6 @@ namespace WPFSurfacePlot3D
             newModelGroup.Children.Add(gridModel);
 
             return newModelGroup;
-        }
-
-        /// <summary>
-        /// This Point3D data set is used to populate the DataPoints dependency properties when they are initialized.
-        /// </summary>
-        public static Point3D[,] SamplePoints
-        {
-            get
-            {
-                int n = 50;
-                Point3D[,] points = new Point3D[n, n];
-                for (int i = 0; i < n; i++)
-                {
-                    for (int j = 0; j < n; j++)
-                    {
-                        double x = i * (Math.PI / n);
-                        double y = j * (Math.PI / n);
-                        double z = 0.5 * Math.Sin(x * y);
-                        points[i, j] = new Point3D(x, y, z);
-                    }
-                }
-                return points;
-            }
         }
 
         private static Color GetFakeColor(double k)
